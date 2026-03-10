@@ -5,7 +5,7 @@ import {
   stopAudio,
 } from "../services/speechService";
 
-const WS_URL = import.meta.env.VITE_WS_URL || "ws://localhost:8000";
+const WS_URL = import.meta.env.VITE_WS_URL || "";
 
 export const useRealtimeVoice = (conversationId) => {
   // States: idle, listening, processing_stt, generating_response, generating_audio, speaking

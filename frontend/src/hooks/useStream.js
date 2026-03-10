@@ -9,7 +9,7 @@ export const useStream = () => {
 
   const stream = useCallback(
     async (message, conversationId, onChunk, onDone, onError) => {
-      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const API_URL = import.meta.env.VITE_API_URL || "";
       const token = localStorage.getItem("token");
 
       setIsStreaming(true);
