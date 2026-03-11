@@ -1,15 +1,19 @@
 import nodemailer from "nodemailer";
+import dns from "dns";
+
+// Force IPv4 resolution to avoid ENETUNREACH on IPv6 addresses
+dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 587,
-  secure: false, // use STARTTLS
+  port: 465,
+  secure: true, // Use SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
-  connectionTimeout: 10000, // 10 seconds
-  greetingTimeout: 10000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
 });
 
 console.log("📧 Starting email server verification...");
