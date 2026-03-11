@@ -19,6 +19,7 @@ import { initDriver, closeDriver } from "./services/dbService.js";
 import { setupVoiceWebSocket } from "./websockets/voiceWebSocket.js";
 import { seedPlans } from "./models/index.js";
 import { initCronJobs } from "./services/cronService.js";
+import { initKeepAlive } from "./services/keepAliveService.js";
 import session from "express-session";
 import passport from "./services/passportService.js";
 
@@ -71,9 +72,7 @@ const start = async () => {
     console.log("✅ PostgreSQL connected & tables synced");
 
     initCronJobs();
-    
-    // Test Email Connection
-    import("./config/nodemailer.js");
+    initKeepAlive();
 
     const server = app.listen(PORT, () => {
       console.log(`Vanni AI server running on port ${PORT}`);
