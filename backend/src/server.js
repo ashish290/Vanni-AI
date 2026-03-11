@@ -71,6 +71,9 @@ const start = async () => {
     console.log("✅ PostgreSQL connected & tables synced");
 
     initCronJobs();
+    
+    // Test Email Connection
+    import("./config/nodemailer.js");
 
     const server = app.listen(PORT, () => {
       console.log(`Vanni AI server running on port ${PORT}`);
