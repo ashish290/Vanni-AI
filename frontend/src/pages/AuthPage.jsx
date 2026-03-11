@@ -21,13 +21,6 @@ export default function AuthPage({ initialView = "login" }) {
   const [emptyFields, setEmptyFields] = useState([]);
   const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
-  // OTP States
-  const [showOTP, setShowOTP] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [otpTimer, setOtpTimer] = useState(60);
-  const [canResend, setCanResend] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
-
   // Speech bubble logic
   const speechTexts = [
     "Namaste! 🙏",
@@ -37,7 +30,7 @@ export default function AuthPage({ initialView = "login" }) {
   ];
   const [speechIdx, setSpeechIdx] = useState(0);
 
-  const { login, register, verifyOTP, resendOTP } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,17 +38,6 @@ export default function AuthPage({ initialView = "login" }) {
     setIsLoginView(initialView === "login");
   }, [initialView, location.pathname]);
 
-  useEffect(() => {
-    let timer;
-    if (showOTP && otpTimer > 0) {
-      timer = setInterval(() => {
-        setOtpTimer((prev) => prev - 1);
-      }, 1000);
-    } else if (otpTimer === 0) {
-      setCanResend(true);
-    }
-    return () => clearInterval(timer);
-  }, [showOTP, otpTimer]);
 
   const validateEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
@@ -122,31 +104,14 @@ export default function AuthPage({ initialView = "login" }) {
       }
 
       if (data && data.success) {
-        if (!isLoginView) {
-          // Registration successful, show OTP
-          toast.success("Verification code sent to your email!");
-          setShowOTP(true);
-          setOtpTimer(60);
-          setCanResend(false);
-        } else {
-          setSubmitStatus("success");
-          setTimeout(() => {
-            navigate("/chat");
-          }, 2000);
-        }
+        setSubmitStatus("success");
+        setTimeout(() => {
+          navigate("/chat");
+        }, 2000);
       } else {
-        if (data?.needsVerification) {
-          // Login failed because not verified
-          toast.error(data.error);
-          setEmail(data.email || email);
-          setShowOTP(true);
-          setOtpTimer(60);
-          setCanResend(false);
-        } else {
-          const msg = data?.error || "Authentication failed.";
-          toast.error(msg);
-          setSubmitStatus("error");
-        }
+        const msg = data?.error || "Authentication failed.";
+        toast.error(msg);
+        setSubmitStatus("error");
         setIsSubmitting(false);
       }
     } catch (err) {
@@ -156,43 +121,6 @@ export default function AuthPage({ initialView = "login" }) {
     }
   };
 
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-    if (isVerifying || otp.length < 6) return;
-
-    setIsVerifying(true);
-    try {
-      const data = await verifyOTP(email, otp);
-      if (data.success) {
-        setSubmitStatus("success");
-        setTimeout(() => {
-          navigate("/chat");
-        }, 2000);
-      } else {
-        toast.error(data.error || "Verification failed");
-        setIsVerifying(false);
-      }
-    } catch (err) {
-      toast.error("Failed to verify OTP");
-      setIsVerifying(false);
-    }
-  };
-
-  const handleResendOTP = async () => {
-    if (!canResend) return;
-    try {
-      const data = await resendOTP(email);
-      if (data.success) {
-        toast.success("New code sent!");
-        setOtpTimer(60);
-        setCanResend(false);
-      } else {
-        toast.error(data.error || "Failed to resend code");
-      }
-    } catch (err) {
-      toast.error("Network error");
-    }
-  };
 
   const toggleView = (view) => {
     if (
@@ -513,76 +441,7 @@ export default function AuthPage({ initialView = "login" }) {
             </button>
           </div>
 
-          {showOTP ? (
-            <div
-              className="flex flex-col gap-5"
-              style={{ animation: "staggerFadeUp 0.4s forwards" }}
-            >
-              <div className="text-center">
-                <p className="font-hind text-[15px] text-[#555] leading-relaxed">
-                  Humne{" "}
-                  <span className="font-bold text-[#1A1A2E]">{email}</span> par
-                  ek 6-digit code bheja hai.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <div className="relative h-[60px]">
-                  <input
-                    type="text"
-                    maxLength="6"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                    placeholder="000000"
-                    className="w-full h-full text-center text-[32px] font-baloo font-bold tracking-[12px] border-2 border-[#E8E8E8] rounded-[16px] focus:border-saffron-500 bg-white outline-none transition-all"
-                    autoFocus
-                  />
-                </div>
-                <p className="text-center text-[12px] font-hind text-[#888]">
-                  Code nahi aaya?{" "}
-                  {canResend ? (
-                    <button
-                      onClick={handleResendOTP}
-                      className="text-saffron-500 font-bold hover:underline"
-                    >
-                      Resend Karo
-                    </button>
-                  ) : (
-                    <span>
-                      Wait for{" "}
-                      <span className="text-saffron-500 font-bold">
-                        {otpTimer}s
-                      </span>
-                    </span>
-                  )}
-                </p>
-              </div>
-
-              <button
-                onClick={handleVerifyOTP}
-                disabled={isVerifying || otp.length < 6}
-                className={`w-full h-[50px] rounded-[14px] font-baloo font-bold text-[16px] text-white flex items-center justify-center gap-2 transition-all ${
-                  !isVerifying && otp.length === 6
-                    ? "bg-gradient-to-r from-[#FF6B35] to-[#E55A25] shadow-md active:scale-95"
-                    : "bg-[#D1D1D1] cursor-not-allowed"
-                }`}
-              >
-                {isVerifying ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  "Verify & Continue 🚀"
-                )}
-              </button>
-
-              <button
-                onClick={() => setShowOTP(false)}
-                className="text-[14px] font-hind font-medium text-[#888] hover:text-[#1A1A2E] transition-colors"
-              >
-                ← Edit Email
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
               {/* OAUTH BUTTONS */}
               <div
                 className="flex flex-col gap-2 mb-1"
@@ -881,7 +740,6 @@ export default function AuthPage({ initialView = "login" }) {
                 </button>
               </div>
             </form>
-          )}
 
           {/* BOTTOM LINKS */}
           <div

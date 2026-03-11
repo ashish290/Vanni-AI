@@ -201,7 +201,7 @@ export const sendWelcomeEmail = async (email, name) => {
           <!-- CTA Button -->
           <tr>
             <td style="padding: 10px 40px 36px; text-align:center;">
-              <a href="${process.env.CLIENT_URL}" style="
+              <a href="${process.env.FRONTEND_URL}" style="
                 display:inline-block;
                 background: linear-gradient(135deg, #FF6B35, #FF8C42);
                 color:#ffffff;

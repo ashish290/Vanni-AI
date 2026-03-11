@@ -238,19 +238,32 @@ export const register = async (req, res, next) => {
       email,
       passwordHash,
       level: level || "beginner",
-      otp,
-      otpExpiry,
-      isVerified: false,
+      otp: null,
+      otpExpiry: null,
+      isVerified: true,
     });
 
-    // Send OTP Email
-    await sendOTPEmail(email, otp);
+    // Initialize learning roadmap
+    try {
+      await initializeRoadmap(user.id, user.level || "beginner");
+    } catch (err) {
+      console.log("Roadmap init skipped:", err.message);
+    }
+
+    const token = signToken(user);
+
+    await sendWelcomeEmail(user.email, user.name);
 
     res.status(201).json({
       success: true,
-      message:
-        "Registration successful. Please verify your email with the OTP sent.",
-      email: user.email,
+      message: "Registration successful. Welcome to Vanni AI! 🎉",
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        level: user.level,
+      },
     });
   } catch (error) {
     next(error);

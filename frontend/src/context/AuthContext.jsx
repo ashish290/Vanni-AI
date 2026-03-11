@@ -48,7 +48,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = useCallback(async (name, email, password, level) => {
     const data = await api.register(name, email, password, level);
-    // Note: Register no longer sets token, verification is required now.
+    if (data.success && data.token) {
+      setToken(data.token);
+      setUser(data.user);
+      setIsAuthenticated(true);
+    }
     return data;
   }, []);
 
