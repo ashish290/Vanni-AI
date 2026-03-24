@@ -1,8 +1,4 @@
 import nodemailer from "nodemailer";
-import dns from "dns";
-
-// Force IPv4 resolution to avoid ENETUNREACH on IPv6 addresses
-dns.setDefaultResultOrder("ipv4first");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -14,6 +10,8 @@ const transporter = nodemailer.createTransport({
   },
   connectionTimeout: 15000,
   greetingTimeout: 15000,
+  // Force IPv4 for SMTP only (not globally) to avoid ENETUNREACH on IPv6
+  dnsOptions: { family: 4 },
 });
 
 console.log("📧 Starting email server verification...");
